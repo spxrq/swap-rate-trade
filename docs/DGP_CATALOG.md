@@ -1,24 +1,29 @@
 # DGP Catalog
 
-Living catalog of data-generating processes used in this project. Add a row whenever a new DGP is introduced.
-
 ## `synthetic/want/` — thesis-matching DGPs
-
-A sound method **must** work on these.
 
 | Name | File | Description | Parameters | Status |
 |------|------|-------------|------------|--------|
-| _none yet_ | | | | |
+| OU + microstructure noise | `want/ou_with_noise.py` | Ornstein–Uhlenbeck efficient price mean-reverting to `μ` with half-life `ln(2)/θ`, plus iid Gaussian microstructure noise. Supports both Layer-1 (microstructure detection via RV/BV) and Layer-2 (mean-reversion detection) analysis. | `μ`, `θ`, `σ_eff`, `σ_noise`, `n_minutes`, `start`, `seed` | Scaffolded — awaiting realistic parameter values |
 
 ## `synthetic/dont_want/` — adversarial / null DGPs
 
-A sound method **must fail** on these. A method that "succeeds" here is a false positive.
+| Name | File | Description | Negates | Parameters | Status |
+|------|------|-------------|---------|------------|--------|
+| Random walk + noise | `dont_want/random_walk_with_noise.py` | Random-walk efficient price plus iid Gaussian microstructure noise. | Mean-reversion | `start_level`, `σ_eff`, `σ_noise`, `n_minutes`, `start`, `seed` | Scaffolded |
+| OU, no noise | `dont_want/ou_no_noise.py` | Pure OU efficient price; no microstructure noise overlay. Signature plot should be approximately flat. | Microstructure noise | `μ`, `θ`, `σ_eff`, `n_minutes`, `start`, `seed` | Scaffolded |
 
-| Name | File | Description | Parameters | Status |
-|------|------|-------------|------------|--------|
-| _none yet_ | | | | |
+## Validation principle
+
+A method is accepted only when:
+1. It **succeeds** on `want/ou_with_noise` (detects microstructure noise at fine Δ; detects mean-reversion at the chosen Δ*).
+2. It **fails to detect mean-reversion** on `dont_want/random_walk_with_noise`.
+3. It **fails to detect microstructure noise** on `dont_want/ou_no_noise` (signature plot approximately flat).
 
 ## Conventions
 
-- Every DGP function takes explicit parameters (seed, length, etc.) and returns a DataFrame that conforms to `DATA_CONTRACT.md`.
-- Every DGP has at least one test in `tests/` that verifies the statistical property the DGP claims (e.g. "this `want` DGP produces a cointegrated pair at p < 0.01 over N simulations").
+- Every DGP function uses keyword-only arguments. No positional params.
+- Every DGP accepts a `seed` for reproducibility.
+- Every DGP returns a DataFrame conforming to `DATA_CONTRACT.md`.
+- Every DGP has at least one test in `tests/` that verifies its claimed statistical property.
+- Parameter realism is the operator's call — DGPs have no hard-coded "realistic" defaults.

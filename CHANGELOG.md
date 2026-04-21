@@ -10,6 +10,13 @@ All notable structural changes and decisions get a short entry here.
 - Packaging via `pyproject.toml` + `requirements.txt` (editable install makes `synthetic` importable from anywhere).
 - `nbstripout` pre-commit hook to keep notebook outputs out of git.
 - `CLAUDE.md` project-specific instructions.
+- Intraday mean-reversion thesis locked in: EUR 50Y IRS, delayed-close execution strategy around an 11:00 CET scheduled close.
+- First DGP trio: `want/ou_with_noise`, `dont_want/random_walk_with_noise`, `dont_want/ou_no_noise`. Parameters are required keyword-only arguments — no hard-coded "realistic" defaults.
+- Pytest tests for each DGP: contract conformance + claimed statistical property.
+- Layer-1 notebook skeleton: `notebooks/00_granularity_selection.ipynb` (RV/BV signature-plot research step, methodology cells left empty for operator-led fill-in).
+
+### Changed
+- `docs/DATA_CONTRACT.md` rewritten for intraday single-tenor level-space shape (1-minute base resolution, 08:00–17:00 CET session, single column `50Y`).
 
 ### Archived
 - Original `nb0`–`nb5` template + README moved to `archive/template_reference/` for reference only.
