@@ -1,0 +1,10 @@
+numpy
+pandas
+statsmodels
+matplotlib
+scipy
+jupyter
+jupyterlab
+nbstripout
+pre-commit
+pytest
