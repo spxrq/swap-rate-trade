@@ -6,16 +6,25 @@ Literature-grounded starter parameters for the Layer-1 DGP (`synthetic/want/ou_w
 
 The purpose of these parameters is to produce **qualitatively realistic** intraday paths so that RV/BV signature-plot analysis has something to detect. They are not a calibration of the real 50Y EUR IRS market. If any downstream result is sensitive to a ±2× change in any of these, that is a fragility worth documenting before touching real bQuant data.
 
+## Evidence tiers
+
+Each concrete claim below is tagged:
+
+- **[V]** — *verified:* directly supported by the cited paper.
+- **[A]** — *author extrapolation:* plausible but not directly supported by the cited paper; my scaling judgment from adjacent-market evidence.
+
+Only **[V]** claims should be reused by you or your supervisor without re-reading the source.
+
 ---
 
 ## Summary
 
-| Parameter    | Value        | Meaning                               | Confidence   |
-|--------------|--------------|---------------------------------------|--------------|
-| `μ`          | `0.028`      | ≈ 2.8% — representative 50Y EUR level | Easy to adjust |
-| `θ`          | `ln(2)/60`   | Mean-reversion speed; half-life 60 min| Low          |
-| `σ_eff`      | `3.8e-5`     | Per-√minute vol (≈ 0.38 bp / √min)    | Medium       |
-| `σ_noise`    | `1.5e-5`     | Microstructure noise SD (≈ 0.15 bp)   | Medium-low   |
+| Parameter   | Value         | Meaning                                 | Confidence     |
+|-------------|---------------|-----------------------------------------|----------------|
+| `μ`         | `0.028`       | ≈ 2.8% — representative 50Y EUR level   | Easy to adjust |
+| `θ`         | `ln(2)/60`    | Mean-reversion speed; half-life 60 min  | Low            |
+| `σ_eff`     | `3.8e-5`      | Per-√minute vol (≈ 0.38 bp / √min)      | Medium         |
+| `σ_noise`   | `1.5e-5`      | Microstructure noise SD (≈ 0.15 bp)     | Medium-low     |
 
 Derived properties:
 - Stationary SD around `μ`: ≈ 2.5 bp.
@@ -26,67 +35,83 @@ Derived properties:
 
 ## 1. Mean-reversion half-life — 60 min
 
-**What the literature says.** None of the canonical fixed-income RV papers (Andersen-Bollerslev-Diebold-Labys; Fleming-Remolona; Bandi-Russell) estimate an OU half-life on the efficient rate itself at the intraday scale. The efficient log-price is typically treated as a (semi)martingale with no intraday drift — mean reversion in rates is a lower-frequency phenomenon in Vasicek / CIR-style models. What *does* show up at intraday frequency is microstructure-induced negative autocorrelation at the first lag (bid-ask bounce), documented in Poutré-Ragel-Cont (2024) for German bond futures and in Fleming-Remolona for US Treasuries — this is noise-driven mean reversion, not signal mean reversion.
+**What the literature says.**
+- **[V]** None of the canonical fixed-income RV papers (Andersen-Bollerslev-Diebold-Labys; Fleming-Remolona; Bandi-Russell) estimates an OU half-life on the efficient rate itself at the intraday scale. The efficient log-price is treated as a (semi)martingale with no intraday drift; mean-reversion in rates is a lower-frequency phenomenon in Vasicek / CIR-style models.
+- **[V]** Microstructure-induced negative autocorrelation at the first return lag (bid-ask bounce) is documented in Poutré-Ragel-Cont (2024) for German bond futures and in Fleming-Remolona for US Treasuries — but this is noise-driven mean reversion, not signal mean reversion.
+- **[A]** The 30–120 min defensible band for intraday half-lives in less-liquid long-tenor swaps is my extrapolation from the equity-pairs / Holý-Tomanová literature, which finds half-lives from ~5 min (highly liquid pairs) to several hours. I do not have a 50Y-IRS-specific citation.
 
-For transient deviations from an intraday fair value (the object of our stat-arb thesis), empirical work on equity pairs and the Holý-Tomanová OU-under-noise estimator finds intraday half-lives ranging from ~5 minutes (highly liquid pairs) to several hours. For a less liquid long-tenor swap, **30–120 minutes is a defensible band**.
-
-**Chosen value: 60 min (middle of band).** Confidence: **low** — this is extrapolation, not a number from the literature. Sensitivity of downstream results to this choice should be tested explicitly.
+**Chosen value: 60 min (middle of band).** Confidence: **low** — this is extrapolation, not a number from any paper. Sensitivity of downstream results to this choice should be tested explicitly.
 
 ## 2. Stationary SD around μ — 2.5 bp
 
-**What the literature says.** The MOVE index decomposition implies daily US Treasury bp-vol of ~6 bp/day close-to-close at a MOVE of ~100 (normal regime is 5–8 bp/day for 10Y UST). Long-dated swap rates (30Y+) typically show lower bp-vol than 10Y, empirically ~70–85% of 10Y vol — so 50Y EUR IRS daily bp-vol plausibly sits in the **4–7 bp/day** range.
+**What the literature says.**
+- **[V]** The MOVE index decomposition implies daily US Treasury bp-vol of ~6 bp/day close-to-close at a MOVE of ~100 (normal regime ≈ 5–8 bp/day for 10Y UST). Sources: Convexity Maven "RateLab", Schwab MOVE explainer.
+- **[A]** Long-dated swap rates (30Y+) showing "70–85% of 10Y vol" is rule-of-thumb desk knowledge; I have not located a specific paper that quotes this ratio. Treat as author scaling judgment.
+- **[A]** Mapping daily bp-vol to an OU stationary SD by taking "roughly half" is a modeller's choice; no literature formalises this.
 
-The OU *stationary* SD is what the rate wiggles within during a session, not what it drifts by across sessions. A reasonable choice is roughly half the daily bp-vol — giving **2.5 bp**.
+**Chosen value: 2.5 bp stationary SD.** Confidence: **medium** on the daily bp-vol anchor (MOVE-implied, well-known); **low** on the daily-to-stationary mapping.
 
-**Derivation of `σ_eff`.** Given stationary SD `s = 2.5e-4` (decimal) and `θ = ln(2)/60 ≈ 0.01155 min⁻¹`:
+### 2a. Derivation of `σ_eff`
+
+For an Ornstein-Uhlenbeck process, the stationary standard deviation is `s = σ_eff / √(2θ)`. Rearranging, with `s = 2.5e-4` (decimal) and `θ = ln(2)/60 ≈ 0.01155 min⁻¹`:
 
 ```
-σ_eff = s · √(2θ) = 2.5e-4 · √(0.0231) ≈ 3.8e-5
+σ_eff = s · √(2θ) = 2.5e-4 · √(0.02310) ≈ 2.5e-4 · 0.1520 ≈ 3.80e-5
 ```
 
-per √minute. (Equivalent: ≈ 0.38 bp per √minute.)
-
-Confidence: **medium** on daily bp-vol from MOVE-implied sources; **low** on the daily-to-stationary mapping (modeller's judgment).
+per √minute (≈ 0.38 bp per √minute).
 
 ## 3. Noise-to-signal variance ratio — ≈ 0.25 at 1-min
 
-**What the literature says.** Hansen & Lunde (2006) formalise the noise-variance estimator `ω² = RV/(2n)`. Aït-Sahalia & Yu estimate noise-to-signal ratios for NYSE equities, where the bid-ask spread explains roughly 63% of noise variance. The Fed IFDP 905 paper gives the most bond-relevant number: for 10Y UST on BrokerTec, 1-minute sampling is already in the "mildly contaminated" rather than "noise-dominated" regime — noise variance is typically 1–10% of true return variance per sampled interval.
+**What the literature says.**
+- **[V]** Hansen & Lunde (2006) formalise the noise-variance estimator `ω² = RV/(2n)` for equities.
+- **[V]** Aït-Sahalia & Yu (2009) estimate noise-to-signal ratios for NYSE equities. (The specific "~63% of noise variance explained by the bid-ask spread" figure is my recollection rather than a quoted equation from that paper — treat as unverified.)
+- **[V]** Chaboud et al. (Fed IFDP 905, 2007) find that for 10Y UST on BrokerTec, the critical sampling interval beyond which microstructure noise dominates RV estimation is **2–3 minutes on non-announcement days**, ~40 seconds on announcement days with realized-kernel estimators.
+- **[A]** The specific "1–10% of return variance at 1-min" figure for 10Y UST is my extrapolation from the 2–3 min break-point result — Chaboud et al. discuss the issue qualitatively; a reader wanting this exact ratio should compute it from their paper's tables rather than cite my doc.
+- **[A]** The "scale up 3–10×" for 50Y EUR IRS relative to 10Y UST is judgment: 50Y is dealer-quote-driven, less liquid, with longer duration amplifying quote-midpoint noise.
 
-For a less liquid instrument like 50Y EUR IRS — dealer-quote-driven, lower trade frequency, duration amplifying quote-midpoint errors — scale up by 3–10× to give **0.10–0.50**.
+**Chosen ratio: 0.25 (middle of the scaled band).**
 
-**Chosen ratio: 0.25 (middle of scaled band).**
+### 3a. Derivation of `σ_noise`
 
-**Derivation of `σ_noise`.** Noise contributes `2·σ_noise²` to the 1-min return variance (because returns difference the noise). Setting that equal to `0.25 · σ_eff²`:
+Noise contributes `2·σ_noise²` to the 1-min return variance (because returns difference the noise). Setting that equal to `0.25 · σ_eff²`:
 
 ```
 σ_noise = σ_eff · √(0.25 / 2) ≈ 3.8e-5 · 0.354 ≈ 1.35e-5 → rounded to 1.5e-5
 ```
 
-Confidence: **medium-low** — the 10Y UST anchor is solid; the scaling factor to 50Y EUR IRS is judgment.
+**Approximation note.** The expression above uses the *small-θ* approximation that the 1-min efficient return variance equals `σ_eff²` (i.e., returns are Brownian over one minute). The exact 1-min efficient return variance for a stationary OU process is `σ_eff² · (1 − exp(−θ))/θ`. At our `θ ≈ 0.01155`, the factor `(1 − exp(−θ))/θ ≈ 0.9942`, so the approximation error is **~0.6%** — negligible. The approximation would break down for very large θ (short half-lives).
 
-## 4. Signature-plot break point — not a DGP parameter, but a design validation
+Confidence: **medium-low** on the ratio itself — the 10Y UST evidence is real but the 50Y scaling is judgment.
 
-**What the literature says.** The Fed IFDP 905 paper directly answers this for 10Y UST: critical sampling interval **2–3 minutes** on non-announcement days, down to 40 seconds on announcement days (with realized-kernel estimators). Hansen & Lunde place the canonical "4–5 minute sweet spot" for FX and bonds. Poutré-Ragel-Cont show the familiar decreasing-RV signature-plot profile across German bond futures, with the Buxl (24–35Y) — closest in duration to 50Y EUR IRS — showing the largest tick-noise contamination.
+## 4. Signature-plot break point — not a DGP parameter, a design check
 
-For a less-liquid 50Y swap, the break should shift up to roughly **5–10 min**.
+- **[V]** Chaboud et al. (Fed IFDP 905): critical sampling interval 2–3 min for 10Y UST on BrokerTec (non-announcement days).
+- **[V]** Hansen & Lunde (2006): canonical 4–5 min "sweet spot" for RV estimation in FX and bonds.
+- **[V]** Poutré-Ragel-Cont (2024): German bond futures show the familiar decreasing-RV signature plot. They report signature-plot behaviour for Schatz / Bobl / Bund / Buxl futures; the specific statement that *Buxl shows the largest tick-noise contamination* is my interpretation of their plots, not a direct quote — verify against the paper if material.
+- **[A]** For 50Y EUR IRS (less liquid than even Buxl), shift the break to ~5–10 min.
 
-**Validation of our candle grid.** The notebook uses `Δ ∈ {5, 15, 30, 60, 120}` min. This straddles the break point perfectly: 5-min should still be noise-contaminated (RV visibly inflated relative to BV), 15-min onwards should be in the flat regime. If our DGP is calibrated anywhere close to reality, the signature plot **will flatten between 5 and 15 min** — exactly the diagnostic the notebook is designed to produce.
+**Validation of our candle grid.** The notebook uses `Δ ∈ {5, 15, 30, 60, 120}` min. Against a break of ~5–10 min, 5-min should still be noise-contaminated and 15-min+ should be in the flat regime — the signature plot **should visibly flatten between 5 and 15 min** if the DGP is roughly calibrated. Note: the grid cannot resolve a break at 10 min exactly. Consider adding a 10-min diagnostic point in the Layer-1 notebook.
 
 ---
 
-## Known limitations
+## Assumptions embedded in the current DGP
 
-- **50Y EUR IRS is not 10Y UST.** Lower trade frequency, dealer-quote-driven price discovery, longer duration amplifying quote-midpoint noise. Real noise may be larger than estimated here.
-- **No time-of-day vol envelope.** Real intraday vol is heteroskedastic — typically higher around London open, ECB-related hours, and around US macro releases. This DGP produces stationary vol across the session. Good enough for signature-plot testing; not good enough for backtest-realistic path generation.
-- **No jumps.** Real markets have announcement jumps. BV's robustness to jumps is one reason we include it, but this DGP will not exercise that property. Add jumps if a method turns out to be sensitive to them.
-- **Stationary OU, not drifting.** `μ` is constant by construction. Real intraday means drift with overnight news flow.
+These are **modelling choices baked into the code**, not just data-fitting choices. Flag them in any downstream analysis.
+
+1. **Efficient price starts at μ.** Both OU-based DGPs initialise `X₀ = μ` rather than drawing from the stationary distribution `N(μ, σ_eff²/(2θ))`. This suppresses early-session dispersion and bakes in *no opening dislocation*. For the delayed-close thesis — which is about intraday deviations from fair value — this is a conservative simplification. Revisit if we ever want to model sessions where the 11:00 close is executed when the rate is already far from equilibrium.
+2. **σ_noise derivation uses the small-θ approximation.** Valid at our θ (~0.6% error); would need the exact form `(1 − exp(−θ))/θ` factor for short half-lives.
+3. **No time-of-day volatility envelope.** Real intraday vol is heteroskedastic — typically higher around London open, ECB-related hours, and US macro releases. This DGP produces stationary vol across the session.
+4. **No jumps.** Real markets have announcement jumps. BV's robustness to jumps is one reason we include it, but this DGP will not exercise that property. Add jumps if a method turns out to be sensitive to them.
+5. **Stationary μ, not drifting.** `μ` is constant by construction. Real intraday means drift with news flow.
+6. **Single-session scope.** No cross-session handoff or overnight gap modelling.
 
 ---
 
 ## References
 
 - Hansen, P. R., & Lunde, A. (2006). [Realized Variance and Market Microstructure Noise](https://web-docs.stern.nyu.edu/salomon/docs/Hansen-Lunde.pdf). *Journal of Business & Economic Statistics.*
-- Chaboud, A., Chiquoine, B., Hjalmarsson, E., & Loretan, M. (2007). [Frequency of Observation and Estimation of Integrated Volatility in Deep and Liquid Markets](https://www.federalreserve.gov/pubs/ifdp/2007/905/ifdp905.htm). *Federal Reserve Board IFDP 905.*
+- Chaboud, A., Chiquoine, B., Hjalmarsson, E., & Loretan, M. (2007). [Frequency of Observation and the Estimation of Integrated Volatility in Deep and Liquid Financial Markets](https://www.federalreserve.gov/econres/ifdp/frequency-of-observation-and-the-estimation-of-integrated-volatility-in-deep-and-liquid-financial-markets.htm). *Federal Reserve Board IFDP 905.*
 - Aït-Sahalia, Y., & Yu, J. (2009). [High Frequency Market Microstructure Noise Estimates and Liquidity Measures](https://www.princeton.edu/~yacine/liquidity.pdf). *Annals of Applied Statistics.*
 - Fleming, M. J., & Remolona, E. M. (1999). [Price Formation and Liquidity in the US Treasury Market: The Response to Public Information](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=152708). *Journal of Finance.*
 - Mizrach, B., & Neely, C. J. (2009). [The Microstructure of the US Treasury Market](https://www.newyorkfed.org/medialibrary/media/research/staff_reports/sr381.pdf). *FRBNY Staff Report 381.*

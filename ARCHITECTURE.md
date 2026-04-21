@@ -39,7 +39,14 @@ Locally, the DataFrame is produced by a synthetic DGP. In bQuant, the same-shape
 
 ## Validation principle
 
-A method is validated by **both** succeeding on `synthetic/want/` data **and** failing on `synthetic/dont_want/` data. Passing one without the other is insufficient evidence.
+A method is validated by a **Monte Carlo criterion over many simulated paths**, not by a single realization. Null DGPs are stochastic — at nominal significance α, a properly-sized test on `dont_want/` data will falsely reject at rate α *by construction*, so a single-path comparison is unsound.
+
+Baseline thresholds:
+
+- **Power** on `synthetic/want/`: over **N = 500** paths, the method must detect the target property with frequency ≥ **β = 0.9**.
+- **Type-I control** on `synthetic/dont_want/`: over **N = 500** paths, the method must detect the property with frequency ≤ **α = 0.05**, with a **1.5×** finite-sample tolerance in automated tests (FPR ≤ 0.075).
+
+A method is accepted only when both criteria hold.
 
 ## Why separate `synthetic/` from `notebooks/`
 

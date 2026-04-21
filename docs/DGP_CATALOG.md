@@ -15,10 +15,13 @@
 
 ## Validation principle
 
-A method is accepted only when:
-1. It **succeeds** on `want/ou_with_noise` (detects microstructure noise at fine Δ; detects mean-reversion at the chosen Δ*).
-2. It **fails to detect mean-reversion** on `dont_want/random_walk_with_noise`.
-3. It **fails to detect microstructure noise** on `dont_want/ou_no_noise` (signature plot approximately flat).
+A method is accepted only when **both** Monte Carlo criteria hold across many simulated paths. Per-path comparison is unsound: null DGPs are stochastic, and a properly-sized α-level test will falsely reject at rate α by construction.
+
+**Baseline:** N = 500 paths, α = 0.05, β = 0.9, FPR tolerance = 1.5·α.
+
+1. **Power on `want/ou_with_noise`** — over N paths, the method must detect the property (mean-reversion at the chosen Δ*; microstructure noise at fine Δ) with frequency ≥ β.
+2. **Type-I control on `dont_want/random_walk_with_noise`** — over N paths, the method must falsely detect mean-reversion with frequency ≤ 1.5·α.
+3. **Type-I control on `dont_want/ou_no_noise`** — over N paths, the method must falsely detect microstructure noise with frequency ≤ 1.5·α.
 
 ## Conventions
 

@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import numpy as np
 import pandas as pd
+import pytest
 
 from synthetic.dont_want.ou_no_noise import simulate
 
@@ -41,14 +42,30 @@ def test_reproducible_with_seed():
     pd.testing.assert_frame_equal(a, b)
 
 
-def test_no_microstructure_noise_signature():
-    """Without microstructure noise, 1-step return autocorrelation should not
-    show the strongly-negative signature that iid noise induces.
+def test_rejects_naive_start_timestamp():
+    """Per docs/DATA_CONTRACT.md, `start` must be timezone-aware."""
+    with pytest.raises(ValueError, match="timezone-aware"):
+        simulate(
+            mu=0.045,
+            theta=0.05,
+            sigma_eff=1e-4,
+            n_minutes=540,
+            start=pd.Timestamp("2024-01-02 08:00"),  # naive
+            seed=0,
+        )
 
-    Background: iid additive noise on a slow efficient price drives the 1-lag
-    autocorrelation of 1-step returns toward -0.5 as the noise-to-signal ratio
-    grows. Its absence therefore means the autocorrelation is close to what the
-    pure OU process alone implies — at minute scale, near zero.
+
+def test_single_path_smoke_low_return_autocorr():
+    """Single-path smoke test. NOT a validation test.
+
+    Without microstructure noise, 1-lag return autocorrelation should not
+    show the strongly-negative signature that iid noise induces. This is a
+    weak proxy for 'signature plot is approximately flat' and is retained
+    only to catch gross breakage.
+
+    TODO: replace with a proper Monte Carlo type-I test against a real
+    RV/BV signature-plot flatness statistic once the Layer-1 methodology
+    exists (see docs/IMPLEMENTATION_STATUS.md).
     """
     df = _simulate(n_minutes=5000, seed=0)
     returns = df["50Y"].diff().dropna()

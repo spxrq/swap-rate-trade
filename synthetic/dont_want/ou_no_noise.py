@@ -32,6 +32,12 @@ def simulate(
         Single-column DataFrame with a 1-minute ``DatetimeIndex`` starting at
         ``start``. Values are the efficient rate level (no noise).
     """
+    if start.tz is None:
+        raise ValueError(
+            f"`start` must be timezone-aware per docs/DATA_CONTRACT.md; "
+            f"got naive timestamp {start!r}"
+        )
+
     rng = np.random.default_rng(seed)
 
     phi = np.exp(-theta)

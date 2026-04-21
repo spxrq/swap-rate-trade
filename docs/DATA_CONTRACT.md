@@ -8,7 +8,7 @@ The canonical shape of the DataFrame that moves between `synthetic/` DGPs, `note
 - **Intraday**, single-session scope.
 - **Base resolution**: 1 minute. Finer than the finest candle (5 min) we will analyse, so we have headroom to construct realized variance and bipower variation at multiple granularities.
 - **Candle grid for analysis**: Δ ∈ {5, 15, 30, 60, 120} min.
-- **Session**: 08:00–17:00 CET (EUR liquid window). 540 one-minute bars per session.
+- **Session**: half-open **[08:00, 17:00) CET** — **540 one-minute bars** indexed `08:00, 08:01, …, 16:59`. `17:00` is the session close and is excluded from the index.
 - **Value space**: rate **level** in decimal form (e.g. `0.0432` = 4.32%).
   - PnL is quoted in basis points, which is a level difference.
   - Log-level is nearly identical over intraday moves and cannot represent negative rates.
@@ -30,7 +30,7 @@ The canonical shape of the DataFrame that moves between `synthetic/` DGPs, `note
 2024-01-02 08:01:00+01:00  0.04322
 2024-01-02 08:02:00+01:00  0.04319
 ...
-2024-01-02 17:00:00+01:00  0.04315
+2024-01-02 16:59:00+01:00  0.04315
 ```
 
 ## Rules

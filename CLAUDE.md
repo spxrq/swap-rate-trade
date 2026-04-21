@@ -4,11 +4,11 @@ Project-specific instructions for Claude when working on this repo.
 
 ## What this project is
 
-A research scaffold for statistical-arbitrage trading on long-tenor swap rates (20y / 30y / 50y). Short tenors (< 10y) are out of scope.
+A research scaffold for **intraday statistical-arbitrage execution on EUR 50Y IRS** (Phase 1). Other long tenors (20y, 30y) are secondary and can be added later by copying cells; short tenors (< 10y) are out of scope.
 
 Two layers:
 
-1. **`synthetic/`** — adversarial data-generating processes (DGPs). `want/` DGPs match the thesis (mean-reverting spreads, cointegration, etc.). `dont_want/` DGPs break it (random walks, etc.). A method is validated only when it succeeds on `want/` **and** fails on `dont_want/`.
+1. **`synthetic/`** — adversarial data-generating processes (DGPs). `want/` DGPs match the thesis (intraday mean-reverting rate around a constant level, plus microstructure noise). `dont_want/` DGPs break it (random walks, no noise). A method is validated by a **Monte Carlo criterion over many simulated paths**, not by a single realization. Baseline thresholds: on `synthetic/want/`, power ≥ **β = 0.9** over **N = 500** paths; on `synthetic/dont_want/`, false-positive rate ≤ **α = 0.05** with a **1.5× finite-sample tolerance** (FPR ≤ 0.075). A single null-DGP path looks thesis-consistent by chance roughly α of the time by construction, so path-by-path validation is unsound.
 2. **`notebooks/`** — compartmentalized, paste-ready econometric analysis. The interface is the DataFrame contract in `docs/DATA_CONTRACT.md`.
 
 The repo is designed to be paste-ready into Bloomberg's bQuant. No Bloomberg SDK wrappers. No data-retrieval classes.
