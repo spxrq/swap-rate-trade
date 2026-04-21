@@ -4,7 +4,7 @@
 
 | Name | File | Description | Parameters | Status |
 |------|------|-------------|------------|--------|
-| OU + microstructure noise | `want/ou_with_noise.py` | Ornstein–Uhlenbeck efficient price mean-reverting to `μ` with half-life `ln(2)/θ`, plus iid Gaussian microstructure noise. Supports both Layer-1 (microstructure detection via RV/BV) and Layer-2 (mean-reversion detection) analysis. | `μ`, `θ`, `σ_eff`, `σ_noise`, `n_minutes`, `start`, `seed` | Scaffolded — awaiting realistic parameter values |
+| OU + microstructure noise | `want/ou_with_noise.py` | Ornstein–Uhlenbeck efficient price mean-reverting to `μ` with half-life `ln(2)/θ`, plus iid Gaussian microstructure noise. Supports both Layer-1 (microstructure detection via RV/BV) and Layer-2 (mean-reversion detection) analysis. | `μ`, `θ`, `σ_eff`, `σ_noise`, `n_minutes`, `start`, `seed` | Scaffolded; literature-grounded starter parameters in `PARAMETER_SOURCES.md` |
 
 ## `synthetic/dont_want/` — adversarial / null DGPs
 
@@ -26,4 +26,4 @@ A method is accepted only when:
 - Every DGP accepts a `seed` for reproducibility.
 - Every DGP returns a DataFrame conforming to `DATA_CONTRACT.md`.
 - Every DGP has at least one test in `tests/` that verifies its claimed statistical property.
-- Parameter realism is the operator's call — DGPs have no hard-coded "realistic" defaults.
+- DGP function signatures have no hard-coded "realistic" defaults. Notebooks and tests supply their own parameter sets explicitly. Literature-grounded starters live in `docs/PARAMETER_SOURCES.md`.
