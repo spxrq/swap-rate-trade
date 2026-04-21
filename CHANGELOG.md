@@ -25,6 +25,15 @@ All notable structural changes and decisions get a short entry here.
 - **`PARAMETER_SOURCES.md` restructured.** Each claim tagged `[V]` verified or `[A]` author-extrapolation so a reader can tell what's literature-grounded vs judgment. σ_noise derivation flagged as small-θ approximation (~0.6% error at our θ). New "Assumptions embedded in the current DGP" section documents OU-starts-at-μ and other baked-in modelling choices.
 - **`CLAUDE.md` project scope** narrowed from "20y/30y/50y" to "EUR 50Y IRS (Phase 1)" to match reality.
 
+### Added (Layer-1 notebook scaffolding — pre-methodology)
+- `notebooks/00_granularity_selection.ipynb` expanded to 22 cells with every design decision and modelling assumption documented explicitly. New content:
+  - "Design decisions and assumptions" section (return definition, aggregation, non-overlapping returns, multi-session averaging, stabilisation criterion, parameter confidence, adversarial validation, not-modelled list).
+  - Section 2 "Multi-session generation" with `N_SESSIONS=100`, seed-offsetting, and a reusable `generate_sessions()` helper.
+  - Section 3 aggregation helper: `resample_last()` + a per-Δ `candles` dict.
+  - Section 7 adversarial sanity check — mirror the RV/BV/signature-plot analysis on `dont_want/ou_no_noise`. Seeds the future Monte Carlo type-I test for that DGP.
+  - Section 9 "Select Δ\*" now carries forward three open concerns: parameter sensitivity, null-curve flatness, heteroskedasticity.
+- Methodology cells (RV, BV, signature-plot construction) remain `TODO(operator-led)`. Notebook runs end-to-end without error.
+
 ### Changed
 - `docs/DATA_CONTRACT.md` rewritten for intraday single-tenor level-space shape (1-minute base resolution, 08:00–17:00 CET session, single column `50Y`).
 

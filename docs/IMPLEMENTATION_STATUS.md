@@ -18,7 +18,9 @@
 
 ## Current focus
 
-Scaffold and parameters are in place. The `want/ou_with_noise` DGP can now be simulated end-to-end. Next: fill in the RV/BV methodology cells in `notebooks/00_granularity_selection.ipynb` (operator-led econometrics).
+Scaffold, parameters, Monte Carlo validation principle, and Layer-1 notebook structure are all in place. `notebooks/00_granularity_selection.ipynb` now has 22 cells: design-decisions section with every assumption explicitly documented, multi-session generation, aggregation helper, adversarial (null-DGP) mirror section, and RV / BV / signature-plot cells as `TODO(operator-led)`. The notebook executes end-to-end without error (scaffolding runs; methodology cells are no-ops).
+
+Next: operator-led fill-in of the RV/BV methodology and the Δ* decision.
 
 ## Blocked / open questions
 
