@@ -1,6 +1,6 @@
 # Data Contract
 
-The canonical shape of the DataFrame that moves between `synthetic/` DGPs, `notebooks/`, and bQuant.
+The canonical shape of the DataFrame that moves between `synthetic/` DGPs, `bquant_snippets/`, reference notebooks, and bQuant.
 
 ## Current scope (Phase 1)
 
@@ -35,14 +35,14 @@ The canonical shape of the DataFrame that moves between `synthetic/` DGPs, `note
 
 ## Rules
 
-- Column order is not semantically meaningful; notebooks reference columns by name.
+- Column order is not semantically meaningful; snippets reference columns by name.
 - Missing values: not permitted within a simulated session (DGP output is always complete). Real bQuant data may have gaps — handling deferred to Phase 2.
 - Timezone: CET tz-aware. bQuant may return UTC or session-local; convert on import.
 
 ## What the contract buys us
 
-1. **DGPs swap in and out** without touching notebook code.
-2. **Paste-ready:** a notebook cell that expects this shape works identically whether the input came from `synthetic/` or from bQuant's `bql`.
+1. **DGPs swap in and out** without touching methodology code.
+2. **Paste-ready:** a snippet that expects this shape works identically whether the input came from `synthetic/` or from bQuant's `bql`.
 3. **Testable:** every DGP has a shape-conformance test.
 
 ## Change process

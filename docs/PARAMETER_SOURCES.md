@@ -1,6 +1,6 @@
 # Parameter Sources
 
-Literature-grounded starter parameters for the Layer-1 DGP (`synthetic/want/ou_with_noise`), applied in `notebooks/00_granularity_selection.ipynb`.
+Literature-grounded starter parameters for the Layer-1 DGP (`synthetic/want/ou_with_noise`), documented in the reference notebook `notebooks/00_dgp_design.ipynb` and used by the Layer-1 prototype.
 
 **Scope caveat up front.** Direct empirical studies on **intraday EUR 50Y IRS microstructure** are essentially nonexistent in the open academic literature — this tenor trades OTC and in professional feeds; academics rarely have the data. Every value below extrapolates from adjacent markets (10Y US Treasuries on BrokerTec, German bond futures on Eurex, equity pairs, FX). Confidence is tagged per parameter.
 
@@ -91,7 +91,7 @@ Confidence: **medium-low** on the ratio itself — the 10Y UST evidence is real 
 - **[V]** Poutré-Ragel-Cont (2024): German bond futures show the familiar decreasing-RV signature plot. They report signature-plot behaviour for Schatz / Bobl / Bund / Buxl futures; the specific statement that *Buxl shows the largest tick-noise contamination* is my interpretation of their plots, not a direct quote — verify against the paper if material.
 - **[A]** For 50Y EUR IRS (less liquid than even Buxl), shift the break to ~5–10 min.
 
-**Validation of our candle grid.** The notebook uses `Δ ∈ {5, 15, 30, 60, 120}` min. Against a break of ~5–10 min, 5-min should still be noise-contaminated and 15-min+ should be in the flat regime — the signature plot **should visibly flatten between 5 and 15 min** if the DGP is roughly calibrated. Note: the grid cannot resolve a break at 10 min exactly. Consider adding a 10-min diagnostic point in the Layer-1 notebook.
+**Validation of our candle grid.** The Layer-1 prototype uses `Δ ∈ {5, 15, 30, 60, 120}` min. Against a break of ~5–10 min, 5-min should still be noise-contaminated and 15-min+ should be in the flat regime — the signature plot **should visibly flatten between 5 and 15 min** if the DGP is roughly calibrated. Note: the grid cannot resolve a break at 10 min exactly. Consider adding a 10-min diagnostic point in the live Layer-1 snippet.
 
 ---
 

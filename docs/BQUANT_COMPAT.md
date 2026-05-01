@@ -1,6 +1,6 @@
 # bQuant Compatibility
 
-Living allowlist of libraries. Update as we learn what bQuant permits. Status values: `allowed` / `blocked` / `untested`.
+Living allowlist of libraries. For `bquant_snippets/`, use only `numpy`, `pandas`, and `matplotlib`. Status values: `allowed` / `blocked` / `untested`.
 
 ## Python
 
@@ -8,7 +8,7 @@ Living allowlist of libraries. Update as we learn what bQuant permits. Status va
 |-------------|-----------|-------------------|-------|
 | numpy       | allowed   | assumed baseline  | |
 | pandas      | allowed   | assumed baseline  | |
-| statsmodels | allowed   | assumed baseline  | |
+| statsmodels | untested  | not for snippets   | keep out of public paste snippets |
 | matplotlib  | allowed   | assumed baseline  | |
 | scipy       | untested  | —                 | confirm before using in a cell destined for bQuant |
 | rpy2        | untested  | —                 | R bridge — needs supervisor confirmation; low confidence it's permitted |
@@ -23,6 +23,6 @@ Open question. Confirm with supervisor whether R is available in bQuant and if s
 
 ## How to use this doc
 
-- **Before adding a new import** to a notebook cell that will be pasted into bQuant: check this table.
-- **If the library is `untested`**: flag it in the notebook with a comment, run the cell in bQuant, and update the row to `allowed` or `blocked` with the source.
+- **Before adding a new import** to a snippet that will be pasted into bQuant: check this table.
+- **If the library is `untested`**: flag it in the snippet with a comment, run the cell in bQuant, and update the row to `allowed` or `blocked` with the source.
 - **If the library is `blocked`**: find a Python-native alternative, or isolate the offending step to a cell we do not paste (e.g. pre-compute locally, paste only the result).
