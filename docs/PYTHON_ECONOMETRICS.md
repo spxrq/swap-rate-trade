@@ -18,8 +18,9 @@ The project can use the full local Python time-series and econometrics stack. Th
 
 1. Use RV/BV to choose a working granularity.
 2. Use ACF/PACF on levels, changes, and squared changes.
-3. Fit AR/AutoReg specifications to the 5m level.
+3. Fit parsimonious AR/AutoReg specifications to the 5m level using BIC by default.
 4. Use ADF and KPSS together for stationarity evidence.
-5. Use Ljung-Box and Breusch-Godfrey for residual serial correlation.
-6. Use Breusch-Pagan and ARCH LM for heteroskedasticity/volatility clustering.
-7. If volatility clustering is material, move to `arch` models: GARCH, EGARCH, and asymmetric GJR-GARCH/TGARCH-style specifications.
+5. Use GPH/log-periodogram and variance-ratio screens to distinguish unit-root-like behavior from possible fractional integration.
+6. Use Ljung-Box and Breusch-Godfrey for residual serial correlation.
+7. Use Breusch-Pagan and ARCH LM for heteroskedasticity/volatility clustering.
+8. If volatility clustering is material, move to `arch` models: GARCH, EGARCH, and asymmetric GJR-GARCH/TGARCH-style specifications.

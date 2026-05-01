@@ -3,12 +3,20 @@
 # Run this after setting EXCEL_PATH, after the Excel research starter, or after
 # creating a 5m DataFrame named df_5. The script uses statsmodels for
 # standardized time-series tests.
+#
+# If you already pasted an older version into a notebook, update these cells:
+# - CELL 1: add scipy.stats.norm import if missing.
+# - CELL 2: add AR_SELECTION_IC and FRACTIONAL_MAX_M config.
+# - CELL 8: replace AutoReg selection so AR(p) uses BIC by default.
+# - CELL 9: insert the fractional-integration screen.
+# - CELL 11: add AR_SELECTION_IC, GPH d, and the new summary tables.
 import re
 
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
 import statsmodels.api as sm
+from scipy.stats import norm
 from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 from statsmodels.stats.diagnostic import (
     acorr_breusch_godfrey,
@@ -50,7 +58,9 @@ SESSION_END = globals().get("SESSION_END", "17:00")
 MAX_ACF_LAG = globals().get("MAX_ACF_LAG", 40)
 LJUNG_BOX_LAGS = [5, 10, 20]
 AR_MAX_LAGS = globals().get("AR_MAX_LAGS", 12)
+AR_SELECTION_IC = globals().get("AR_SELECTION_IC", "bic")
 ROLLING_WINDOW_BARS = globals().get("ROLLING_WINDOW_BARS", 24)
+FRACTIONAL_MAX_M = globals().get("FRACTIONAL_MAX_M", None)
 RATE_CHANGE_DEFINITION = "first level difference in bp: 10000 * rate.diff(); not log change"
 
 
@@ -293,8 +303,10 @@ plt.show()
 # Model: level_t = alpha + phi * level_{t-1} + error_t.
 # A phi below 1 suggests mean reversion; half-life is only meaningful for
 # 0 < phi < 1 and should be treated cautiously when phi is very close to 1.
-# This cell also fits a statsmodels AutoReg process selected by AIC as a
-# higher-order AR benchmark for the next stage of the research.
+# This cell also fits a statsmodels AutoReg process selected by BIC by default.
+# BIC is intentionally parsimonious for noisy intraday data. Set
+# AR_SELECTION_IC = "aic" before running if you want the less conservative
+# comparison.
 # Half-life handling:
 # - AR(1): half-life bars = log(0.5) / log(phi).
 # - AR(p): use the companion matrix. The dominant root gives the smooth
@@ -335,7 +347,7 @@ ar1_summary = pd.DataFrame(
 selected_ar = ar_select_order(
     analysis_df["level_bp"],
     maxlag=min(AR_MAX_LAGS, max(1, len(analysis_df) // 5)),
-    ic="aic",
+    ic=AR_SELECTION_IC,
     old_names=False,
 )
 selected_ar_lags = selected_ar.ar_lags if selected_ar.ar_lags else [1]
@@ -424,6 +436,7 @@ autoreg_summary = pd.DataFrame(
     {
         "value": {
             "selected_lags": str(selected_ar_lags),
+            "selection_ic": AR_SELECTION_IC,
             "phi_by_lag": str({i + 1: round(float(v), 6) for i, v in enumerate(autoreg_phi) if v != 0.0}),
             "aic": float(autoreg_model.aic),
             "bic": float(autoreg_model.bic),
@@ -441,7 +454,74 @@ autoreg_summary = pd.DataFrame(
 
 
 # %%
-# CELL 9 - stationarity, autocorrelation, and heteroskedasticity tests
+# CELL 9 - fractional integration screens
+# These are lightweight diagnostics, not a final ARFIMA estimation.
+# GPH estimates the fractional differencing parameter d from the low-frequency
+# log-periodogram. Rough interpretation:
+# - d near 1: unit-root-like behavior
+# - 0.5 <= d < 1: nonstationary but mean-reverting long memory
+# - 0 < d < 0.5: stationary long memory
+# - d near 0: short memory
+def estimate_gph_d(series, m=None):
+    x = np.asarray(series.dropna(), dtype=float)
+    x = x - x.mean()
+    n = len(x)
+    if n < 32:
+        return {
+            "gph_d": np.nan,
+            "gph_t": np.nan,
+            "gph_pvalue_approx": np.nan,
+            "gph_m": 0,
+            "gph_note": "not enough observations",
+        }
+
+    if m is None:
+        m = int(np.floor(np.sqrt(n)))
+    m = int(max(4, min(m, n // 2 - 1)))
+
+    freqs = 2.0 * np.pi * np.arange(1, m + 1) / n
+    fft = np.fft.fft(x)
+    periodogram = (1.0 / (2.0 * np.pi * n)) * np.abs(fft[1 : m + 1]) ** 2
+    periodogram = np.maximum(periodogram, np.finfo(float).tiny)
+
+    y = np.log(periodogram)
+    z = np.log(4.0 * (np.sin(freqs / 2.0) ** 2))
+    xreg = sm.add_constant(z)
+    model = sm.OLS(y, xreg).fit()
+    d_hat = -0.5 * float(model.params[1])
+    d_se = 0.5 * float(model.bse[1])
+    d_t = d_hat / d_se if d_se > 0 else np.nan
+    d_p = float(2.0 * (1.0 - norm.cdf(abs(d_t)))) if pd.notna(d_t) else np.nan
+
+    return {
+        "gph_d": d_hat,
+        "gph_t": d_t,
+        "gph_pvalue_approx": d_p,
+        "gph_m": m,
+        "gph_note": "screen only; confirm with ARFIMA/local-Whittle if material",
+    }
+
+
+def variance_ratio_table(series, horizons):
+    x = pd.Series(series.dropna()).astype(float)
+    rows = []
+    one_step_var = x.diff().dropna().var(ddof=1)
+    for horizon in horizons:
+        h_diff = x.diff(horizon).dropna()
+        vr = h_diff.var(ddof=1) / (horizon * one_step_var) if one_step_var > 0 else np.nan
+        rows.append({"horizon": horizon, "variance_ratio": float(vr)})
+    return pd.DataFrame(rows).set_index("horizon")
+
+
+gph_summary = pd.DataFrame({"value": estimate_gph_d(analysis_df["level_bp"], FRACTIONAL_MAX_M)})
+variance_ratio_summary = variance_ratio_table(
+    analysis_df["level_bp"],
+    horizons=[2, 4, 8, 16, 32],
+)
+
+
+# %%
+# CELL 10 - stationarity, autocorrelation, and heteroskedasticity tests
 # ADF null: level has a unit root.
 # KPSS null: level is stationary around a constant.
 # Ljung-Box: autocorrelation in changes and squared changes.
@@ -527,7 +607,7 @@ residual_diagnostics = pd.DataFrame(
 
 
 # %%
-# CELL 10 - compact research readout
+# CELL 11 - compact research readout
 # Keeps output focused on diagnostics rather than raw timestamped rows.
 def show_table(obj):
     if "display" in globals():
@@ -551,6 +631,7 @@ print(f"CHANGE_ACF_LAG1: {lag1_change_acf:.4f}")
 print(f"SQ_CHANGE_ACF_LAG1: {lag1_sq_acf:.4f}")
 print(f"AR1_PHI: {phi:.6f}")
 print(f"AR1_HALF_LIFE_MIN: {half_life_minutes:.2f}" if pd.notna(half_life_minutes) else "AR1_HALF_LIFE_MIN: undefined")
+print(f"AR_SELECTION_IC: {AR_SELECTION_IC}")
 print(f"AUTOREG_SELECTED_LAGS: {selected_ar_lags}")
 print(f"AUTOREG_DOMINANT_ROOT: {autoreg_half_life['dominant_root']:.6f}")
 print(
@@ -560,11 +641,12 @@ print(
 )
 print(f"ADF_PVALUE_LEVEL: {adf_p:.4f}")
 print(f"KPSS_PVALUE_LEVEL: {kpss_p:.4f}" if pd.notna(kpss_p) else "KPSS_PVALUE_LEVEL: unavailable")
+print(f"GPH_FRACTIONAL_D_LEVEL: {float(gph_summary.loc['gph_d', 'value']):.4f}")
 print(f"BREUSCH_GODFREY_PVALUE_AR1_RESID: {bg_lm_p:.4f}")
 print(f"BREUSCH_PAGAN_PVALUE_AR1_RESID: {bp_lm_p:.4f}")
 print(f"ARCH_LM_PVALUE_AR1_RESID: {arch_lm_p:.4f}")
 print(f"ARCH_LIBRARY_AVAILABLE: {ARCH_AVAILABLE}")
-print("INTERPRETATION_GUIDE: lower phi and lower ADF p-value support level mean reversion; high KPSS p-value supports stationarity; negative change ACF supports short-horizon reversal.")
+print("INTERPRETATION_GUIDE: BIC-selected AR is the parsimonious baseline; ADF non-rejection plus KPSS rejection points away from level stationarity; GPH d screens unit-root-like vs fractional integration.")
 
 print("\nSUMMARY_STATS")
 show_table(summary_stats)
@@ -574,6 +656,12 @@ show_table(ar1_summary)
 
 print("\nAUTOREG_LEVEL_SUMMARY")
 show_table(autoreg_summary)
+
+print("\nFRACTIONAL_INTEGRATION_SCREEN")
+show_table(gph_summary)
+
+print("\nVARIANCE_RATIO_SUMMARY")
+show_table(variance_ratio_summary)
 
 print("\nSTATIONARITY_SUMMARY")
 show_table(stationarity_summary)
