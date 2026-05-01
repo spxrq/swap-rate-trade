@@ -6,13 +6,13 @@ Purpose: make the public repo useful during live Bloomberg/bQuant sessions witho
 
 The public repo owns methodology code. bQuant owns data access.
 
-Every bQuant-ready snippet should assume exactly one input object:
+Most bQuant-ready snippets should assume exactly one input object:
 
 ```python
 df = ...
 ```
 
-Locally, `df` can come from synthetic smoke-test data. In bQuant, `df` comes from a Bloomberg query and must match `docs/DATA_CONTRACT.md` or the looser contract stated in the snippet.
+Locally, `df` can come from synthetic smoke-test data. In bQuant, `df` comes from a Bloomberg query and must match `docs/DATA_CONTRACT.md` or the looser contract stated in the snippet. The Excel research starter is the exception: it assumes a bQuant-local `EXCEL_PATH` and sheets named like `timestamp5`, `timestamp60`, etc.
 
 Everything after the bQuant `df` assignment should be paste-ready and should avoid:
 
@@ -70,8 +70,9 @@ The live bQuant handoff sequence is:
 ```text
 bquant_snippets/00_data_audit.py
 bquant_snippets/01_granularity_pathb.py
-future: bquant_snippets/02_mean_reversion_*.py
-future: bquant_snippets/03_execution_window_*.py
+optional: bquant_snippets/02_excel_research_starter.py
+future: bquant_snippets/03_mean_reversion_*.py
+future: bquant_snippets/04_execution_window_*.py
 ```
 
 The important Layer-1 change is methodological: do not select sampling frequency by looking for a textbook RV plateau. For an OU process over a short session, the no-noise RV curve is not flat. Use the OU-implied RV null and diagnose the microstructure-noise wedge instead.

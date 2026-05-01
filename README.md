@@ -12,14 +12,14 @@ Two layers:
 
 2. **bQuant handoff layer (`bquant_snippets/`)** — paste-ready methodology cells. A colleague creates a DataFrame named `df` inside bQuant, pastes the public snippet, and reports only compact aggregate readouts. Notebooks are kept as non-canonical development references.
 
-The public repo never needs raw Bloomberg rows. bQuant supplies `df`; this repo supplies the method.
+The public repo never needs raw Bloomberg rows. bQuant supplies `df` or a bQuant-local Excel workbook; this repo supplies the method.
 
 ## bQuant handoff
 
 The live workflow is:
 
 1. Build or revise public methodology code here.
-2. In bQuant, create `df` from Bloomberg data.
+2. In bQuant, create `df` from Bloomberg data, or set `EXCEL_PATH` for a workbook with sheets like `timestamp5` and `timestamp60`.
 3. Paste `bquant_snippets/00_data_audit.py` first.
 4. If the audit passes or the warnings are understood, paste `bquant_snippets/01_granularity_pathb.py`.
 5. Verbally report only aggregate lines such as `DATA_AUDIT`, `SESSION_DAYS`, `DELTA_STAR`, and `NOISE_WEDGE_BY_DELTA`.
@@ -54,6 +54,7 @@ Current paste-ready helpers:
 
 - [`bquant_snippets/00_data_audit.py`](bquant_snippets/00_data_audit.py) — first paste in bQuant; audits a Bloomberg-supplied `df` for usable tenor columns, frequency, missingness, duplicates, and session completeness.
 - [`bquant_snippets/01_granularity_pathb.py`](bquant_snippets/01_granularity_pathb.py) — Layer-1 OU noise-wedge granularity diagnostic.
+- [`bquant_snippets/02_excel_research_starter.py`](bquant_snippets/02_excel_research_starter.py) — optional Excel workbook loader for sheets named `timestamp5`, `timestamp60`, etc.; creates `df_5`, `df_60`, distribution diagnostics, ACF/PACF plots, and RV/BV summaries.
 
 ## Status
 

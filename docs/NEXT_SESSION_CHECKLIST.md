@@ -9,6 +9,7 @@ Purpose: run the live bQuant handoff without moving raw Bloomberg data out of bQ
 - Include one numeric EUR swap-rate level column, preferably `50Y`, `30Y`, `20Y`, or `10Y`.
 - Keep values as decimal rate levels, not percent strings and not returns.
 - Target intraday one-minute observations for the [08:00, 17:00) session.
+- If using the Excel starter instead, keep the workbook inside bQuant and name sheets `timestamp5`, `timestamp15`, `timestamp60`, etc.
 
 ## Paste first
 
@@ -17,6 +18,8 @@ Paste `bquant_snippets/00_data_audit.py` first.
 If it prints `STAGE_STATUS: pass`, continue to `bquant_snippets/01_granularity_pathb.py`.
 
 If it prints `STAGE_STATUS: review`, verbally report the warning lines before continuing.
+
+For Excel workbook research, set `EXCEL_PATH` in bQuant and paste `bquant_snippets/02_excel_research_starter.py`. It creates separate frames such as `df_5` and `df_60`.
 
 ## Readouts to report
 
