@@ -1,6 +1,6 @@
 # bQuant Compatibility
 
-Living allowlist of libraries. For `bquant_snippets/`, use only `numpy`, `pandas`, and `matplotlib`. Status values: `allowed` / `blocked` / `untested`.
+Living allowlist of libraries. For `bquant_snippets/`, prefer `numpy`, `pandas`, and `matplotlib`; use `statsmodels` only where the snippet explicitly needs standard time-series diagnostics. Status values: `allowed` / `blocked` / `untested`.
 
 ## Python
 
@@ -8,7 +8,7 @@ Living allowlist of libraries. For `bquant_snippets/`, use only `numpy`, `pandas
 |-------------|-----------|-------------------|-------|
 | numpy       | allowed   | assumed baseline  | |
 | pandas      | allowed   | assumed baseline  | |
-| statsmodels | untested  | not for snippets   | keep out of public paste snippets |
+| statsmodels | allowed   | requirements/local | used for standardized ACF/PACF in Excel research starter; confirm availability in bQuant if the import fails |
 | matplotlib  | allowed   | assumed baseline  | |
 | scipy       | untested  | —                 | confirm before using in a cell destined for bQuant |
 | rpy2        | untested  | —                 | R bridge — needs supervisor confirmation; low confidence it's permitted |
