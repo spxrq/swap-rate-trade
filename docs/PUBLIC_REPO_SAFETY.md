@@ -1,25 +1,23 @@
 # Public Repo Safety
 
-This repository is public methodology infrastructure. Bloomberg/bQuant remains the data boundary.
+This repository is methodology infrastructure for local Excel-based research.
 
 ## Allowed content
 
-- methodology code that uses `numpy`, `pandas`, and `matplotlib`;
+- methodology code that uses the local Python econometrics stack;
 - synthetic or dummy smoke-test data with known parameters;
-- paste-ready bQuant snippets that assume `df` already exists;
+- notebook-ready research snippets;
 - aggregate diagnostics, warning text, and decision rules;
 - documentation for the public workflow and data contract.
 
 ## Forbidden content
 
-- real Bloomberg data or exported bQuant files;
-- screenshots, copied terminal output, or raw timestamped rates;
-- proprietary prices, curves, trade/order IDs, tickets, client names, counterparty names, or desk-specific identifiers;
-- filesystem reads inside bQuant snippets;
-- Bloomberg query code that embeds confidential tickers, universes, portfolios, or internal conventions;
-- empirical conclusions that depend on real data unless they are stated only as safe aggregate readouts from bQuant.
+- raw timestamped empirical rows unless intentionally committed as an approved sample;
+- screenshots or copied terminal output;
+- trade/order IDs, tickets, client names, counterparty names, or desk-specific identifiers;
+- empirical conclusions that depend on data whose provenance and cleaning are not documented.
 
-## Safe operator readouts
+## Safe Research Readouts
 
 Examples that are safe to read aloud or paste into notes:
 
@@ -43,4 +41,4 @@ DELTA_STAR: 15
 NOISE_WEDGE_BY_DELTA: 5m=0.071, 15m=0.032, 30m=0.018, 60m=0.010, 120m=0.006
 ```
 
-If a readout includes raw rows, timestamps, screenshots, identifiers, or exact proprietary prices, do not move it into this repo.
+If a readout includes raw rows, screenshots, identifiers, or undocumented exact prices, do not move it into this repo.

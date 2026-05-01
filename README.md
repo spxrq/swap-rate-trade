@@ -1,37 +1,30 @@
 # swap-rate-trade
 
-Public research scaffold for intraday EUR swap-rate execution-timing methodology. Real Bloomberg/bQuant data stays inside bQuant. This repo contains only public code, documentation, synthetic smoke tests, and paste-ready snippets that print compact aggregate diagnostics.
+Research scaffold for intraday EUR swap-rate execution-timing methodology using locally saved Excel data, synthetic smoke tests, and notebook-ready Python snippets.
 
 ## Purpose
 
 Two layers:
 
-1. **Synthetic data layer (`synthetic/`)** — dummy data-generating processes (DGPs) for smoke tests and known-parameter validation before live data is touched. Synthetic results do not decide empirical conclusions.
-   - **`synthetic/want/`** — DGPs that match our thesis (e.g. mean-reverting spreads, cointegrated tenors). A sound method should work on these.
-   - **`synthetic/dont_want/`** — DGPs that break our thesis (e.g. independent random walks). A sound method *must fail* on these. If it doesn't, it's a false positive and disqualified.
+1. **Synthetic data layer (`synthetic/`)** — dummy data-generating processes (DGPs) for smoke tests and known-parameter validation before empirical data is used. Synthetic results do not decide empirical conclusions.
+   - **`synthetic/want/`** — DGPs that match our thesis, such as mean-reverting spreads or cointegrated tenors. A sound method should work on these.
+   - **`synthetic/dont_want/`** — DGPs that break our thesis, such as independent random walks. A sound method must fail on these.
 
-2. **bQuant handoff layer (`bquant_snippets/`)** — paste-ready methodology cells. A colleague creates a DataFrame named `df` inside bQuant, pastes the public snippet, and reports only compact aggregate readouts. Notebooks are kept as non-canonical development references.
+2. **Excel research layer (`research_snippets/`)** — notebook-style Python cells for loading manually saved Excel sheets and running econometric diagnostics.
 
-The public repo never needs raw Bloomberg rows. bQuant supplies `df` or a bQuant-local Excel workbook; this repo supplies the method.
+The empirical workflow starts from an Excel workbook with sheets named like `timestamp5`, `timestamp15`, `timestamp60`, etc. The code creates separate DataFrames such as `df_5` and `df_60`.
 
-## bQuant handoff
+## Research Workflow
 
-The live workflow is:
+1. Save the market data workbook locally.
+2. Set `EXCEL_PATH` to that workbook.
+3. Run `research_snippets/02_excel_research_starter.py` to load the timestamp sheets, inspect distributions, ACF/PACF, and RV/BV.
+4. Use 5m as the current working granularity if the RV/BV signature does not show meaningful fine-grid inflation.
+5. Run `research_snippets/03_mean_reversion_starter.py` to inspect level persistence, 5m reversal, squared-change clustering, AR models, ADF, KPSS, Ljung-Box, and residual diagnostics.
 
-1. Build or revise public methodology code here.
-2. In bQuant, create `df` from Bloomberg data, or set `EXCEL_PATH` for a workbook with sheets like `timestamp5` and `timestamp60`.
-3. Paste `bquant_snippets/00_data_audit.py` first.
-4. If the audit passes or the warnings are understood, paste `bquant_snippets/01_granularity_pathb.py`.
-5. Verbally report only aggregate lines such as `DATA_AUDIT`, `SESSION_DAYS`, `DELTA_STAR`, and `NOISE_WEDGE_BY_DELTA`.
-6. Do not export raw data, screenshots, timestamps, trade/order IDs, client names, or proprietary desk information.
+Layer 1 now uses the OU-implied RV null and microstructure-noise wedge. Do not rely only on the textbook "find where RV stabilizes" rule for the OU regime.
 
-See [`docs/BQUANT_COMPAT.md`](docs/BQUANT_COMPAT.md) for the living library-allowlist.
-
-For live collaboration, use [`docs/NEXT_SESSION_CHECKLIST.md`](docs/NEXT_SESSION_CHECKLIST.md), [`docs/PUBLIC_REPO_SAFETY.md`](docs/PUBLIC_REPO_SAFETY.md), [`docs/BQUANT_PASTE_PROTOCOL.md`](docs/BQUANT_PASTE_PROTOCOL.md), and [`docs/OPERATOR_READOUTS.md`](docs/OPERATOR_READOUTS.md).
-
-Layer 1 now uses the OU-implied RV null and microstructure-noise wedge. Do not use the textbook "find where RV stabilizes" rule for the OU regime.
-
-## Quickstart (local)
+## Quickstart
 
 ```bash
 git clone git@github.com:spxrq/swap-rate-trade.git
@@ -39,9 +32,9 @@ cd swap-rate-trade
 
 python -m venv .venv && source .venv/bin/activate
 pip install -r requirements.txt
-pip install -e .            # makes `from synthetic.want import ...` work anywhere
+pip install -e .
 
-pre-commit install          # enables nbstripout — strips notebook outputs on every commit
+pre-commit install
 
 jupyter lab
 ```
@@ -50,11 +43,12 @@ jupyter lab
 
 See [`ARCHITECTURE.md`](ARCHITECTURE.md) for how the pieces fit together.
 
-Current paste-ready helpers:
+Current research helpers:
 
-- [`bquant_snippets/00_data_audit.py`](bquant_snippets/00_data_audit.py) — first paste in bQuant; audits a Bloomberg-supplied `df` for usable tenor columns, frequency, missingness, duplicates, and session completeness.
-- [`bquant_snippets/01_granularity_pathb.py`](bquant_snippets/01_granularity_pathb.py) — Layer-1 OU noise-wedge granularity diagnostic.
-- [`bquant_snippets/02_excel_research_starter.py`](bquant_snippets/02_excel_research_starter.py) — optional Excel workbook loader for sheets named `timestamp5`, `timestamp60`, etc.; creates `df_5`, `df_60`, distribution diagnostics, ACF/PACF plots, and RV/BV summaries.
+- [`research_snippets/00_data_audit.py`](research_snippets/00_data_audit.py) — audits an already-created `df` for usable tenor columns, frequency, missingness, duplicates, and session completeness.
+- [`research_snippets/01_granularity_pathb.py`](research_snippets/01_granularity_pathb.py) — Layer-1 OU noise-wedge granularity diagnostic for a single clean input frame.
+- [`research_snippets/02_excel_research_starter.py`](research_snippets/02_excel_research_starter.py) — Excel workbook loader for sheets named `timestamp5`, `timestamp60`, etc.; creates `df_5`, `df_60`, distribution diagnostics, ACF/PACF plots, and RV/BV summaries.
+- [`research_snippets/03_mean_reversion_starter.py`](research_snippets/03_mean_reversion_starter.py) — second-stage 5m mean-reversion diagnostics for levels, first differences, squared differences, AR/AR(1), ADF, KPSS, Ljung-Box, Breusch-Godfrey, Breusch-Pagan, and ARCH LM tests.
 
 ## Status
 

@@ -7,7 +7,7 @@ Purpose:
     The outputs of this notebook determine which tracks are feasible
     and what model complexity is realistic.
 
-Run this AT the Bloomberg terminal. Fill in the findings as you go.
+Run this AT the Excel terminal. Fill in the findings as you go.
 ================================================================================
 """
 
@@ -24,7 +24,7 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 # PART A: BLOOMBERG INTRADAY DATA AVAILABILITY
 # =============================================================================
 """
-For each ticker below, check on Bloomberg:
+For each ticker below, check on Excel:
     1. BTIC <GO> - what intraday bar sizes are available?
     2. How far back does intraday history go? (typically ~140 trading days)
     3. Are volume / number-of-trades fields populated for this ticker?
@@ -62,11 +62,11 @@ data_audit = {
 def print_audit_summary():
     """Print what we know so far."""
     if not data_audit:
-        print("No audit data filled in yet. Check each ticker on Bloomberg.")
+        print("No audit data filled in yet. Check each ticker on Excel.")
         return
 
     df = pd.DataFrame(data_audit).T
-    print("\nBloomberg Intraday Data Audit:")
+    print("\nExcel Intraday Data Audit:")
     print(df.to_string())
 
     # Flag which tenors are viable for intraday analysis
@@ -114,7 +114,7 @@ def pull_bbg_blpapi(ticker, start_date, end_date, interval=1):
     session = blpapi.Session(session_options)
 
     if not session.start() or not session.openService('//blp/refdata'):
-        raise ConnectionError("Cannot connect to Bloomberg API")
+        raise ConnectionError("Cannot connect to Excel API")
 
     service = session.getService('//blp/refdata')
     request = service.createRequest('IntradayBarRequest')
@@ -322,7 +322,7 @@ def sanity_check(df, ticker_name=""):
 # =============================================================================
 """
 Workflow:
-    1. Fill in data_audit dict as you check tickers on Bloomberg
+    1. Fill in data_audit dict as you check tickers on Excel
     2. Run print_audit_summary() to see what you have
     3. Pull data for the most promising ticker(s) using pull_full_history()
     4. Filter trading hours
@@ -353,4 +353,4 @@ Then proceed to Notebook 1.
 # -- Step 4: After supervisor meeting
 # assess_track_b_feasibility()
 
-print("Notebook 0 loaded. Start with the Bloomberg data audit.")
+print("Notebook 0 loaded. Start with the Excel data audit.")

@@ -1,17 +1,17 @@
 # Operator Readouts
 
-Operator readouts are short text summaries that a bQuant user can safely read aloud during a live methodology session. They are not data exports.
+Research readouts are short text summaries for recording notebook diagnostics without dumping full raw data tables.
 
 ## Rules
 
 - Print aggregate diagnostics only.
 - Round values enough for decisions.
 - Include warnings when assumptions are weak.
-- Never print raw rate rows, trade identifiers, counterparties, client names, screenshots, or Bloomberg terminal output.
+- Avoid printing raw rate rows, trade identifiers, counterparties, client names, or screenshots.
 
 ## Standard Header
 
-Every live snippet should print something close to:
+Every research snippet should print something close to:
 
 ```text
 DATA_CHECK: pass

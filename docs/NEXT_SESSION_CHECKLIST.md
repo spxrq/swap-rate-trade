@@ -1,46 +1,37 @@
-# Next Session Checklist
+# Next Research Checklist
 
-Purpose: run the live bQuant handoff without moving raw Bloomberg data out of bQuant.
+Purpose: run the local Excel research workflow cleanly.
 
-## Colleague prepares in bQuant
+## Prepare Data
 
-- Create a pandas DataFrame named `df`.
-- Use a timezone-aware `DatetimeIndex`, ideally CET/session-local.
-- Include one numeric EUR swap-rate level column, preferably `50Y`, `30Y`, `20Y`, or `10Y`.
+- Save the workbook locally.
+- Name sheets `timestamp5`, `timestamp15`, `timestamp30`, `timestamp60`, etc.
+- Include a timestamp column and at least one numeric rate-level column, preferably `50Y`, `30Y`, `20Y`, or `10Y`.
 - Keep values as decimal rate levels, not percent strings and not returns.
-- Target intraday one-minute observations for the [08:00, 17:00) session.
-- If using the Excel starter instead, keep the workbook inside bQuant and name sheets `timestamp5`, `timestamp15`, `timestamp60`, etc.
+- Use session-local timestamps where possible.
 
-## Paste first
+## Run Order
 
-Paste `bquant_snippets/00_data_audit.py` first.
+1. Set `EXCEL_PATH`.
+2. Run `research_snippets/02_excel_research_starter.py`.
+3. Confirm the loaded frames exist, especially `df_5`.
+4. Use 5m as the working granularity if RV/BV does not show meaningful fine-grid inflation.
+5. Run `research_snippets/03_mean_reversion_starter.py`.
 
-If it prints `STAGE_STATUS: pass`, continue to `bquant_snippets/01_granularity_pathb.py`.
+## Readouts To Record
 
-If it prints `STAGE_STATUS: review`, verbally report the warning lines before continuing.
-
-For Excel workbook research, set `EXCEL_PATH` in bQuant and paste `bquant_snippets/02_excel_research_starter.py`. It creates separate frames such as `df_5` and `df_60`.
-
-## Readouts to report
-
-Read back only compact aggregate diagnostics:
-
-- `DATA_AUDIT`
 - `RATE_COL`
-- `N_OBS`
-- `TZ_AWARE`
-- `MEDIAN_FREQUENCY_MIN`
-- `SESSION_DAYS`
-- `COMPLETE_SESSIONS_540`
-- `PARTIAL_SESSIONS`
-- `SESSION_BARS_MIN_MEDIAN_MAX`
-- any `WARNING:` lines
-- from Layer 1: `LAYER1_PATH`, `DELTA_GRID`, `OU_HALF_LIFE_MIN`, `WEDGE_TOL`, `DELTA_STAR`, `NOISE_WEDGE_BY_DELTA`
-
-## Do not share
-
-- raw timestamped rate rows;
-- Bloomberg screenshots or terminal output;
-- proprietary prices, curves, identifiers, or field mnemonics beyond the agreed public column name;
-- client, counterparty, trader, trade, order, ticket, or account identifiers;
-- exported files, copied tables, or pasted DataFrame contents.
+- `LOADED_DELTAS`
+- `CREATED_FRAMES`
+- `CANDIDATE_DELTA_HEURISTIC`
+- `CHANGE_ACF_LAG1`
+- `SQ_CHANGE_ACF_LAG1`
+- `AR1_PHI`
+- `AR1_HALF_LIFE_MIN`
+- `AUTOREG_SELECTED_LAGS`
+- `AUTOREG_HALF_LIFE_MIN_DOMINANT_ROOT`
+- `ADF_PVALUE_LEVEL`
+- `KPSS_PVALUE_LEVEL`
+- `BREUSCH_GODFREY_PVALUE_AR1_RESID`
+- `BREUSCH_PAGAN_PVALUE_AR1_RESID`
+- `ARCH_LM_PVALUE_AR1_RESID`

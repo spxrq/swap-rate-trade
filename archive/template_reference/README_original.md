@@ -31,7 +31,7 @@ nb5_simulation.py          Execution simulation & cost-benefit (Tracks A+B+C)
 ## Decision Tree
 
 ### Stage 1: Data (Notebook 0)
-- **What intraday data is available on Bloomberg?**
+- **What intraday data is available on Excel?**
 - **What does the internal order data look like?**
 - Output: data inventory, Track B feasibility assessment
 
@@ -90,7 +90,7 @@ nb5_simulation.py          Execution simulation & cost-benefit (Tracks A+B+C)
 pip install numpy pandas matplotlib seaborn scipy statsmodels arch
 ```
 
-Bloomberg: xbbg or blpapi (for data pull in Notebook 0)
+Excel: xbbg or blpapi (for data pull in Notebook 0)
 
 ## Key Assumptions to Document
 

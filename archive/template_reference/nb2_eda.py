@@ -543,7 +543,7 @@ At the end of this notebook, you should know:
 # dist_info = analyze_distribution(returns, 'EUSA30 5-min returns')
 # hourly, vol_ratio = intraday_patterns(prices, returns)
 #
-# # ECB dates: add actual dates here from Bloomberg (ECB <GO>)
+# # ECB dates: add actual dates here from Excel (ECB <GO>)
 # ecb_dates = []  # ['2025-10-17', '2025-12-12', '2026-01-30', ...]
 # daily = special_days_analysis(returns, ecb_dates=ecb_dates)
 #

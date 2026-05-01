@@ -337,7 +337,7 @@ def decide_optimal_frequency(sig_results, bandi_russell_freq=None):
            first drops below 1.1 (i.e., noise contributes < 10% excess).
         2. Cross-check with Bandi-Russell estimate.
         3. Round to a "standard" bar size (1, 2, 5, 10, 15, 30 min)
-           since Bloomberg provides data at these intervals.
+           since Excel provides data at these intervals.
 
     The final choice should also consider:
         - Bars per day: need enough for daily estimation.

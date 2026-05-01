@@ -12,11 +12,11 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 
 # %%
 # CELL 2 - user config and research conventions
-# Edit EXCEL_PATH in bQuant before running. The remaining defaults are safe
+# Edit EXCEL_PATH before running. The remaining defaults are safe
 # starting points for the timestamp5/timestamp60 workbook workflow.
 #
-# BQUANT INPUT CELL
-# Set EXCEL_PATH first, then paste/run this file.
+# INPUT CELL
+# Set EXCEL_PATH first, then run this file/cell.
 #
 # Example:
 # EXCEL_PATH = r"C:\path\to\swap_data.xlsx"
@@ -37,7 +37,7 @@ from statsmodels.graphics.tsaplots import plot_acf, plot_pacf
 # - rate_change_bp[t] = 10000 * (rate_level[t] - rate_level[t-1])
 # - not log change; swap rates can be near zero/negative, and PnL is linear in bp
 
-# Workbook location inside bQuant. Do not export workbook contents to the repo.
+# Workbook location on the local machine.
 EXCEL_PATH = globals().get("EXCEL_PATH", None)
 
 # Sheet naming convention: timestamp5, timestamp15, timestamp60, etc.

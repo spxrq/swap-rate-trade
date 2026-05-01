@@ -4,7 +4,7 @@ Literature-grounded starter parameters for the Layer-1 DGP (`synthetic/want/ou_w
 
 **Scope caveat up front.** Direct empirical studies on **intraday EUR 50Y IRS microstructure** are essentially nonexistent in the open academic literature — this tenor trades OTC and in professional feeds; academics rarely have the data. Every value below extrapolates from adjacent markets (10Y US Treasuries on BrokerTec, German bond futures on Eurex, equity pairs, FX). Confidence is tagged per parameter.
 
-The purpose of these parameters is to produce **qualitatively realistic** intraday paths so that RV/BV signature-plot analysis has something to detect. They are not a calibration of the real 50Y EUR IRS market. If any downstream result is sensitive to a ±2× change in any of these, that is a fragility worth documenting before touching real bQuant data.
+The purpose of these parameters is to produce **qualitatively realistic** intraday paths so that RV/BV signature-plot analysis has something to detect. They are not a calibration of the real 50Y EUR IRS market. If any downstream result is sensitive to a +/-2x change in any of these, that is a fragility worth documenting before relying on empirical Excel data.
 
 ## Evidence tiers
 
@@ -104,7 +104,7 @@ These are **modelling choices baked into the code**, not just data-fitting choic
 3. **No time-of-day volatility envelope.** Real intraday vol is heteroskedastic — typically higher around London open, ECB-related hours, and US macro releases. This DGP produces stationary vol across the session.
 4. **No jumps.** Real markets have announcement jumps. BV's robustness to jumps is one reason we include it, but this DGP will not exercise that property. Add jumps if a method turns out to be sensitive to them.
 5. **Stationary μ, not drifting.** `μ` is constant by construction. Real intraday means drift with news flow.
-6. **Single-session scope.** No cross-session handoff or overnight gap modelling.
+6. **Single-session scope.** No cross-session carryover or overnight gap modelling.
 
 ---
 

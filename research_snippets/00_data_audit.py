@@ -2,8 +2,8 @@ import numpy as np
 import pandas as pd
 
 
-# BQUANT INPUT CELL
-# In bQuant, create `df` first. Then paste/run this file.
+# INPUT CELL
+# Create `df` first, then run this file/cell.
 #
 # Expected minimal shape:
 # - DatetimeIndex, timezone-aware if possible

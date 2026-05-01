@@ -5,11 +5,11 @@ All notable structural changes and decisions get a short entry here.
 ## [Unreleased]
 
 ### Added
-- Public bQuant live-iteration workflow docs: `docs/BQUANT_PASTE_PROTOCOL.md` and `docs/OPERATOR_READOUTS.md`.
-- `bquant_snippets/00_data_audit.py` for paste-ready Bloomberg DataFrame availability/frequency/session auditing.
-- `bquant_snippets/01_granularity_pathb.py` for a paste-ready Layer-1 OU noise-wedge granularity diagnostic.
+- Local Excel research workflow docs: `docs/EXCEL_RESEARCH_PROTOCOL.md` and `docs/OPERATOR_READOUTS.md`.
+- `research_snippets/00_data_audit.py` for DataFrame availability/frequency/session auditing.
+- `research_snippets/01_granularity_pathb.py` for a notebook-ready Layer-1 OU noise-wedge granularity diagnostic.
 - Initial scaffold: `synthetic/want/`, `synthetic/dont_want/`, `notebooks/`, `tests/`.
-- Docs: `DATA_CONTRACT.md`, `DGP_CATALOG.md`, `BQUANT_COMPAT.md`, `IMPLEMENTATION_STATUS.md`.
+- Docs: `DATA_CONTRACT.md`, `DGP_CATALOG.md`, `PYTHON_ECONOMETRICS.md`, `IMPLEMENTATION_STATUS.md`.
 - Packaging via `pyproject.toml` + `requirements.txt` (editable install makes `synthetic` importable from anywhere).
 - `nbstripout` pre-commit hook to keep notebook outputs out of git.
 - Intraday mean-reversion thesis locked in: EUR 50Y IRS, delayed-close execution strategy around an 11:00 CET scheduled close.
