@@ -1,7 +1,10 @@
 # %%
 # CELL 1 - imports
-# Run this after the Excel research starter, or after creating a 5m DataFrame
-# named df_5. The script uses statsmodels for standardized time-series tests.
+# Run this after setting EXCEL_PATH, after the Excel research starter, or after
+# creating a 5m DataFrame named df_5. The script uses statsmodels for
+# standardized time-series tests.
+import re
+
 import numpy as np
 import pandas as pd
 import matplotlib.pyplot as plt
@@ -36,8 +39,12 @@ except ImportError:
 # - not log change; swap rates can be near zero/negative, and PnL is linear in bp
 
 MEAN_REVERSION_DELTA_MIN = globals().get("MEAN_REVERSION_DELTA_MIN", 5)
+EXCEL_PATH = globals().get("EXCEL_PATH", None)
+SHEET_PREFIX = globals().get("SHEET_PREFIX", "timestamp")
+LOCAL_TZ = globals().get("LOCAL_TZ", "Europe/Amsterdam")
 RATE_COL = globals().get("RATE_COL", None)
 PREFERRED_RATE_COLS = ["50Y", "30Y", "20Y", "10Y", "PX_LAST", "LAST_PRICE", "VALUE"]
+TIMESTAMP_COLS = ["timestamp", "datetime", "date_time", "time", "date"]
 SESSION_START = globals().get("SESSION_START", "08:00")
 SESSION_END = globals().get("SESSION_END", "17:00")
 MAX_ACF_LAG = globals().get("MAX_ACF_LAG", 40)
@@ -52,7 +59,81 @@ RATE_CHANGE_DEFINITION = "first level difference in bp: 10000 * rate.diff(); not
 # Input priority:
 # 1. df_5 if MEAN_REVERSION_DELTA_MIN is 5
 # 2. dfs_by_delta[5] if the Excel starter was run
-# 3. df if a single 5m DataFrame was created manually
+# 3. EXCEL_PATH sheet timestamp5
+# 4. df if a single 5m DataFrame was created manually
+def _clean_col(col):
+    return str(col).strip()
+
+
+def _find_timestamp_col(df):
+    lower_map = {_clean_col(col).lower(): col for col in df.columns}
+    for name in TIMESTAMP_COLS:
+        if name in lower_map:
+            return lower_map[name]
+
+    best_col = None
+    best_valid = 0.0
+    for col in df.columns[:4]:
+        parsed = pd.to_datetime(df[col], errors="coerce")
+        valid = float(parsed.notna().mean())
+        if valid > best_valid:
+            best_col = col
+            best_valid = valid
+
+    if best_col is None or best_valid < 0.80:
+        raise ValueError("could not find a timestamp column")
+    return best_col
+
+
+def _localize_or_convert_index(index):
+    if index.tz is None:
+        try:
+            return index.tz_localize(
+                LOCAL_TZ,
+                ambiguous="infer",
+                nonexistent="shift_forward",
+            )
+        except Exception:
+            return index.tz_localize(
+                LOCAL_TZ,
+                ambiguous="NaT",
+                nonexistent="shift_forward",
+            )
+    return index.tz_convert(LOCAL_TZ)
+
+
+def normalize_excel_sheet(raw):
+    out = raw.copy()
+    out.columns = [_clean_col(col) for col in out.columns]
+
+    timestamp_col = _find_timestamp_col(out)
+    timestamp = pd.to_datetime(out[timestamp_col], errors="coerce")
+    out = out.loc[timestamp.notna()].copy()
+    out.index = pd.DatetimeIndex(timestamp.loc[timestamp.notna()])
+    out = out.drop(columns=[timestamp_col])
+
+    out.index = _localize_or_convert_index(out.index)
+    out = out.loc[~out.index.isna()]
+    out = out.sort_index()
+    out = out[~out.index.duplicated(keep="last")]
+
+    for col in out.columns:
+        out[col] = pd.to_numeric(out[col], errors="coerce")
+    return out.dropna(axis=1, how="all")
+
+
+def load_delta_sheet_from_excel(excel_path, delta_min):
+    xls = pd.ExcelFile(excel_path)
+    pattern = re.compile(rf"^{re.escape(SHEET_PREFIX)}[_\s-]*{delta_min}$", re.IGNORECASE)
+    matching = [sheet for sheet in xls.sheet_names if pattern.match(str(sheet).strip())]
+    if not matching:
+        raise ValueError(
+            f"No sheet found for {SHEET_PREFIX}{delta_min}. "
+            f"Available sheets: {xls.sheet_names}"
+        )
+    return normalize_excel_sheet(pd.read_excel(xls, sheet_name=matching[0])), matching[0]
+
+
 def choose_rate_col(df):
     if RATE_COL is not None:
         if RATE_COL not in df.columns:
@@ -79,10 +160,17 @@ def resolve_input_frame(delta_min):
     if "dfs_by_delta" in globals() and delta_min in globals()["dfs_by_delta"]:
         return globals()["dfs_by_delta"][delta_min].copy(), f"dfs_by_delta[{delta_min}]"
 
+    if EXCEL_PATH is not None:
+        frame, sheet_name = load_delta_sheet_from_excel(EXCEL_PATH, delta_min)
+        globals()[frame_name] = frame
+        return frame.copy(), f"EXCEL_PATH[{sheet_name}]"
+
     if "df" in globals():
         return globals()["df"].copy(), "df"
 
-    raise ValueError(f"Create df_{delta_min}, dfs_by_delta[{delta_min}], or df before running")
+    raise ValueError(
+        f"Create df_{delta_min}, dfs_by_delta[{delta_min}], set EXCEL_PATH, or create df before running"
+    )
 
 
 def validate_frame(df):
